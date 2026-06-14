@@ -28,6 +28,7 @@ export const getDB = () => {
     if (!db) {
         throw new Error('DB no inicializada. Llama a connectDB() primero.');
     }
+    return db;
 }
 
 
