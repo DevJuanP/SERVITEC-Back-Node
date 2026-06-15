@@ -115,10 +115,23 @@ await axios.post('http://localhost:3000/api/auth/register', {
 ```js
 import axios from 'axios';
 
-await axios.post('http://localhost:3000/api/auth/login', {
+const response = await axios.post('http://localhost:3000/api/auth/login', {
   correo: 'juan@example.com',
   password: '123456'
 });
+```
+
+El backend devolverá un objeto como este:
+
+```js
+{
+  mensaje: 'Login exitoso',
+  token: '...',
+  usuario: {
+    nombre: 'Juan',
+    rol: 'cliente'
+  }
+}
 ```
 
 ---
@@ -157,42 +170,46 @@ import axios from 'axios';
 
 const token = localStorage.getItem('token');
 
-await axios.get('http://localhost:3000/api/auth/usuarios', {
+const response = await axios.get('http://localhost:3000/api/auth/usuarios', {
   headers: {
     Authorization: `Bearer ${token}`
   }
 });
 ```
 
-## 4. Cómo usar JWT en el frontend
 
-### 4.1 Guardar el token al iniciar sesión
+## 4. Cómo usar JWT en el frontend con React + Vite
 
-Cuando el login sea exitoso, el backend devuelve un campo llamado `token`. En una app React con Vite, suele guardarse en `localStorage` para reutilizarlo en futuras peticiones.
+### 4.1 Instalar Axios en el proyecto frontend
+
+Si tu frontend está en Vite, instala Axios con:
+
+```bash
+npm install axios
+```
+
+### 4.2 Guardar el token al iniciar sesión
+
+Cuando el login sea exitoso, el backend devuelve un campo llamado `token`.
 
 ```js
 import axios from 'axios';
 
-const login = async (correo, password) => {
-  try {
-    const response = await axios.post('http://localhost:3000/api/auth/login', {
-      correo,
-      password
-    });
+export const login = async (correo, password) => {
+  const response = await axios.post('http://localhost:3000/api/auth/login', {
+    correo,
+    password
+  });
 
-    if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
-    }
-
-    return response.data;
-  } catch (error) {
-    console.error(error.response?.data || error.message);
+  if (response.data.token) {
+    localStorage.setItem('token', response.data.token);
   }
+
+  return response.data;
 };
 ```
 
-
-### 4.2 Enviar el token en rutas protegidas
+### 4.3 Enviar el token en rutas protegidas
 
 El backend espera el token en el header:
 
@@ -200,27 +217,54 @@ El backend espera el token en el header:
 Authorization: Bearer <token>
 ```
 
-En React con Vite, este header se suele agregar de forma centralizada en un cliente Axios:
+Ejemplo en React + Vite:
 
 ```js
 import axios from 'axios';
 
 const token = localStorage.getItem('token');
 
-export const api = axios.create({
-  baseURL: 'http://localhost:3000'
-});
-
-if (token) {
-  api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-}
+export const obtenerUsuarios = async () => {
+  return await axios.get('http://localhost:3000/api/auth/usuarios', {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+};
 ```
 
-Y luego:
+### 4.4 Configuración recomendada para Axios
+
+En Vite, puedes crear un archivo como `src/api/axios.js` con una configuración base:
 
 ```js
-const response = await api.get('/api/auth/usuarios');
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: 'http://localhost:3000/api'
+});
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export default api;
 ```
+
+Y luego usarlo así:
+
+```js
+import api from './api/axios';
+
+export const obtenerUsuarios = async () => {
+  return await api.get('/auth/usuarios');
+};
+```
+
 
 ### 4.3 Qué contiene el token
 
