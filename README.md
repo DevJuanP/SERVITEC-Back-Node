@@ -73,12 +73,30 @@ La API está montada bajo el prefijo:
 ```js
 import axios from 'axios';
 
-await axios.post('http://localhost:3000/api/auth/register', {
-  nombre: 'Juan',
-  correo: 'juan@example.com',
-  password: '123456',
-  rol: 'cliente'
-});
+const registrarUsuario = async (nom, corr, pass) => {
+    const result = await axios.post('http://localhost:3000/api/auth/register', {
+    nombre: nom,
+    correo: corr,
+    password: pass,
+    rol: 'cliente'
+    });
+
+    return result.data
+}
+
+const handleRegisterclick = async () => {
+    try{
+        const responseApi = await registrarUsuario(nom, corr, pass)
+        if(responseApi.mensaje == 'Usuario registrado con éxito'){
+            navigate('/login')
+        }
+    }catch(e){
+        console.log({
+            error: e.message
+        })
+    }
+}
+
 ```
 
 ---
@@ -115,10 +133,27 @@ await axios.post('http://localhost:3000/api/auth/register', {
 ```js
 import axios from 'axios';
 
-const response = await axios.post('http://localhost:3000/api/auth/login', {
-  correo: 'juan@example.com',
-  password: '123456'
-});
+const loginUsuario = async (corr, pass) => {
+    const result = await axios.post('http://localhost:3000/api/auth/login', {
+        correo: corr,
+        password: pass
+    });
+
+    return result.data
+}
+
+const handleLoginClick = async () => {
+    try{
+        const responseApi = await loginUsuario('juan@example.com', '123456')
+        if(responseApi.token){
+            localStorage.setItem('token', responseApi.token)
+        }
+    }catch(e){
+        console.log({
+            error: e.message
+        })
+    }
+}
 ```
 
 El backend devolverá un objeto como este:
@@ -168,13 +203,27 @@ El backend devolverá un objeto como este:
 ```js
 import axios from 'axios';
 
-const token = localStorage.getItem('token');
+const obtenerUsuarios = async (token) => {
+    const result = await axios.get('http://localhost:3000/api/auth/usuarios', {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
 
-const response = await axios.get('http://localhost:3000/api/auth/usuarios', {
-  headers: {
-    Authorization: `Bearer ${token}`
-  }
-});
+    return result.data
+}
+
+const handleGetUsersClick = async () => {
+    try{
+        const token = localStorage.getItem('token')
+        const responseApi = await obtenerUsuarios(token)
+        console.log(responseApi.usuarios)
+    }catch(e){
+        console.log({
+            error: e.message
+        })
+    }
+}
 ```
 
 
@@ -196,16 +245,25 @@ Cuando el login sea exitoso, el backend devuelve un campo llamado `token`.
 import axios from 'axios';
 
 export const login = async (correo, password) => {
-  const response = await axios.post('http://localhost:3000/api/auth/login', {
+  const result = await axios.post('http://localhost:3000/api/auth/login', {
     correo,
     password
   });
 
-  if (response.data.token) {
-    localStorage.setItem('token', response.data.token);
+  if (result.data.token) {
+    localStorage.setItem('token', result.data.token);
   }
 
-  return response.data;
+  return result.data;
+};
+
+export const handleLoginClick = async () => {
+  try {
+    const responseApi = await login('juan@example.com', '123456');
+    console.log(responseApi);
+  } catch (e) {
+    console.log({ error: e.message });
+  }
 };
 ```
 
@@ -222,14 +280,24 @@ Ejemplo en React + Vite:
 ```js
 import axios from 'axios';
 
-const token = localStorage.getItem('token');
-
-export const obtenerUsuarios = async () => {
-  return await axios.get('http://localhost:3000/api/auth/usuarios', {
+export const obtenerUsuarios = async (token) => {
+  const result = await axios.get('http://localhost:3000/api/auth/usuarios', {
     headers: {
       Authorization: `Bearer ${token}`
     }
   });
+
+  return result.data;
+};
+
+export const handleGetUsersClick = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    const responseApi = await obtenerUsuarios(token);
+    console.log(responseApi.usuarios);
+  } catch (e) {
+    console.log({ error: e.message });
+  }
 };
 ```
 
