@@ -9,7 +9,7 @@ const router = Router();
 router.post('/register', registrarUsuario);
 
 // Endpoint: POST /api/auth/login
-router.post('/login', loginUsuario);
+router.post('/login', loginUsuario)
 
 // Primero verifica el token, luego verifica si es admin, y si pasa ambos, muestra los usuarios.
 router.get('/usuarios', verificarToken, esAdmin, obtenerTodosLosUsuarios);

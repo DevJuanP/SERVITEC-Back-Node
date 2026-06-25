@@ -5,6 +5,7 @@ import cors from 'cors'
 import { connectDB } from './config/db.js'
 
 import authRoutes from './routes/authRoutes.js'
+import productoRoutes from './routes/productoRoutes.js'
 
 dotenv.config()
 
@@ -20,6 +21,7 @@ app.use(cors(corsOptions))
 app.use(express.json())
 
 app.use('/api/auth', authRoutes)
+app.use('/api/productos', productoRoutes)
 
 app.get('/', (req, res) => {
     res.send('Hello World!')
