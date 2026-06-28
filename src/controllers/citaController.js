@@ -16,7 +16,8 @@ export const agregarCita = async (req, res) => {
     const clienteId = req.usuarioLogueado.id;
 
     // asesorId y tipoCitaId los manda el front en el body
-    const { asesorId, tipoCitaId, fechaCita } = req.body;
+    const { asesorId, tipoCitaId, fechaCita, descripcion
+     } = req.body;
 
     if (!asesorId || !tipoCitaId) {
       return res.status(400).json({ error: 'asesorId y tipoCitaId son obligatorios' });
@@ -28,7 +29,8 @@ export const agregarCita = async (req, res) => {
       tipoCitaId,
       estado: 'Pendiente',       // valor por defecto
       fechaCreacion: new Date(),  // hora actual del servidor
-      fechaCita
+      fechaCita,
+      descripcion
     });
 
     res.status(201).json({ mensaje: 'Cita agendada correctamente', cita: nuevaCita });
