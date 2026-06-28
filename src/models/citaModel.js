@@ -19,14 +19,19 @@ export const postCita = async ({ clienteId, asesorId, tipoCitaId, estado, fechaC
     descripcion
   };
   const result = await db.collection('citas').insertOne(nuevaCita);
-  //ahora esa cita tiene que agregarse a la colección de citas del cliente y del asesor, para eso necesitamos sus ids
-  await db.collection('clientes').updateOne(
-    { _id: new ObjectId(clienteId) },
-    { $push: { citas: result.insertedId } }
+
+  const clienteObjectId = typeof clienteId === 'string' ? new ObjectId(clienteId) : clienteId;
+  const asesorObjectId = typeof asesorId === 'string' ? new ObjectId(asesorId) : asesorId;
+
+  await db.collection('usuarios').updateOne(
+    { _id: clienteObjectId },
+    { $addToSet: { citas: result.insertedId } }
   );
-  await db.collection('asesores').updateOne(
-    { _id: new ObjectId(asesorId) },
-    { $push: { citas: result.insertedId } }
+
+  await db.collection('usuarios').updateOne(
+    { _id: asesorObjectId },
+    { $addToSet: { citas: result.insertedId } }
   );
+
   return { _id: result.insertedId, ...nuevaCita };
 };
