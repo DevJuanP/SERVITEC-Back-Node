@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import { findUserByEmail, createUser, getAllUsers } from '../models/userModel.js';
+import { findUserByEmail, createUser } from '../models/userModel.js';
 
 import jwt from 'jsonwebtoken';
 
@@ -96,15 +96,4 @@ export const loginUsuario = async (req, res) => {
     res.status(500).json({ error: "Error interno del servidor" });
   }
 
-}
-
-export const obtenerTodosLosUsuarios = async (req, res) => {
-  try {
-    const usuarios = await getAllUsers();
-    res.json({ usuarios });
-    } catch (error) {
-
-    console.error("Error al obtener usuarios:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
-  }
-};
+}
