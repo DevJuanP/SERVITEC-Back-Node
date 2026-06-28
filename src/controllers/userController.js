@@ -1,4 +1,4 @@
-import { getAllUsers, findUserById } from '../models/userModel.js';
+import { getAllUsers, findUserById, getAsesores } from '../models/userModel.js';
 
 export const obtenerTodosLosUsuarios = async (req, res) => {
   try {
@@ -25,6 +25,16 @@ export const obtenerInfoUsuario = async (req, res) => {
     res.json({ usuario });
   } catch (error) {
     console.error("Error al obtener info del usuario:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+};
+
+export const obtenerAsesores = async (req, res) => {
+  try {
+    const asesores = await getAsesores();
+    res.json({ asesores });
+  } catch (error) {
+    console.error("Error al obtener asesores:", error);
     res.status(500).json({ error: "Error interno del servidor" });
   }
 };

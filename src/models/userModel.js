@@ -25,3 +25,11 @@ export const findUserById = async (id) => {
   const db = getDB();
   return await db.collection(collectionName).findOne({ _id: new ObjectId(id) });
 };
+
+export const getAsesores = async () => {
+  const db = getDB();
+  return await db.collection(collectionName)
+    .find({ rol: 'admin' })
+    .project({ _id: 1, nombre: 1 })
+    .toArray();
+};

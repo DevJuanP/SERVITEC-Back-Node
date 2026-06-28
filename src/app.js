@@ -7,6 +7,7 @@ import { connectDB } from './config/db.js'
 import authRoutes from './routes/authRoutes.js'
 import productoRoutes from './routes/productoRoutes.js'
 import userRoutes from './routes/userRoutes.js'
+import { cargarUsers } from './utils/seeder.js'
 
 dotenv.config()
 
@@ -33,8 +34,11 @@ const startServer = async () => {
     try {
         await connectDB();
 
-        app.listen(PORT, () => {
+        app.listen(PORT, async () => {
             console.log(`Server running on port ${PORT}`);
+            console.log('Cargando usuarios, clientes y asesores...')
+            await cargarUsers()
+            console.log('Base de datos lista para usar!')
         });
     } catch (error) {
         console.error('Error starting server:', error);
