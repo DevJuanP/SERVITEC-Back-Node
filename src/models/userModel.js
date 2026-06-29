@@ -23,7 +23,81 @@ export const getAllUsers = async () => {
 
 export const findUserById = async (id) => {
   const db = getDB();
-  return await db.collection(collectionName).findOne({ _id: new ObjectId(id) });
+
+  const [usuario] = await db.collection(collectionName).aggregate([
+    {
+      $match: { _id: new ObjectId(id) }
+    },
+    {
+      $lookup: {
+        from: 'citas',
+        localField: 'citas',
+        foreignField: '_id',
+        as: 'citas'
+      }
+    },
+    {
+      $unwind: {
+        path: '$citas',
+        preserveNullAndEmptyArrays: true
+      }
+    },
+    {
+      $lookup: {
+        from: 'usuarios',
+        localField: 'citas.asesorId',
+        foreignField: '_id',
+        as: 'citas.asesorId'
+      }
+    },
+    {
+      $lookup: {
+        from: 'tiposCitas',
+        localField: 'citas.tipoCitaId',
+        foreignField: '_id',
+        as: 'citas.tipoCitaId'
+      }
+    },
+    {
+      $unwind: {
+        path: '$citas.asesorId',
+        preserveNullAndEmptyArrays: true
+      }
+    },
+    {
+      $unwind: {
+        path: '$citas.tipoCitaId',
+        preserveNullAndEmptyArrays: true
+      }
+    },
+    {
+      $group: {
+        _id: '$_id',
+        nombre: { $first: '$nombre' },
+        correo: { $first: '$correo' },
+        rol: { $first: '$rol' },
+        activo: { $first: '$activo' },
+        fechaRegistro: { $first: '$fechaRegistro' },
+        citas: {
+          $push: {
+            _id: '$citas._id',
+            fechaCita: '$citas.fechaCita',
+            fechaCreacion: '$citas.fechaCreacion',
+            estado: '$citas.estado',
+            descripcion: '$citas.descripcion',
+            asesor: {
+              _id: '$citas.asesorId._id',
+              nombre: '$citas.asesorId.nombre',
+              correo: '$citas.asesorId.correo'
+            },
+            tipoCita: '$citas.tipoCitaId'
+          }
+        }
+      }
+    }
+  ]).toArray();
+
+  return usuario;
 };
 
 export const getAsesores = async () => {

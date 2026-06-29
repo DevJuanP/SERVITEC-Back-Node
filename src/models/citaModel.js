@@ -8,14 +8,15 @@ export const getTypeCita = async () => {
   return await db.collection(collectionName).find().toArray();
 };
 
-export const postCita = async ({ clienteId, asesorId, tipoCitaId, estado, fechaCreacion, descripcion }) => {
+export const postCita = async ({ clienteId, asesorId, tipoCitaId, estado, fechaCreacion, fechaCita, descripcion }) => {
   const db = getDB();
   const nuevaCita = {
-    clienteId,
-    asesorId,
-    tipoCitaId,
+    clienteId: typeof clienteId === 'string' ? new ObjectId(clienteId) : clienteId,
+    asesorId: typeof asesorId === 'string' ? new ObjectId(asesorId) : asesorId,
+    tipoCitaId: typeof tipoCitaId === 'string' ? parseInt(tipoCitaId, 10) : tipoCitaId,
     estado,
-    fechaCreacion,
+    fechaCreacion: typeof fechaCreacion === 'string' ? new Date(fechaCreacion) : fechaCreacion,
+    fechaCita: typeof fechaCita === 'string' ? new Date(fechaCita) : fechaCita,
     descripcion
   };
   const result = await db.collection('citas').insertOne(nuevaCita);
@@ -25,13 +26,23 @@ export const postCita = async ({ clienteId, asesorId, tipoCitaId, estado, fechaC
 
   await db.collection('usuarios').updateOne(
     { _id: clienteObjectId },
-    { $addToSet: { citas: result.insertedId } }
+    { $push: { citas: result.insertedId } }
   );
 
   await db.collection('usuarios').updateOne(
     { _id: asesorObjectId },
-    { $addToSet: { citas: result.insertedId } }
+    { $push: { citas: result.insertedId } }
   );
 
   return { _id: result.insertedId, ...nuevaCita };
+};
+
+export const cancelarCita = async (citaId) => {
+  const db = getDB();
+  const objectId = typeof citaId === 'string' ? new ObjectId(citaId) : citaId;
+
+  return await db.collection('citas').updateOne(
+    { _id: objectId },
+    { $set: { estado: 'cancelado' } }
+  );
 };
